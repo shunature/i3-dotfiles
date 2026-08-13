@@ -66,13 +66,6 @@ echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     sudo zypper refresh
 
-    # Add X11:utilities OBS repo if dunst is not found in standard repos
-    if ! zypper search -x dunst | grep -q "^i\|^v"; then
-        echo -e "${YELLOW}dunst not found in standard repos. Adding X11:utilities OBS repository...${NC}"
-        sudo zypper addrepo https://download.opensuse.org/repositories/X11:utilities/openSUSE_Tumbleweed/X11:utilities.repo
-        sudo zypper refresh
-    fi
-
     # Install packages one by one for better error reporting
     for pkg in "${PACKAGES[@]}"; do
         # Skip comment lines
@@ -81,12 +74,6 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         pkg_clean="${pkg%% #*}"
         pkg_clean="${pkg_clean%%  *}"
         [[ -z "$pkg_clean" ]] && continue
-
-        echo -ne "  Installing ${GREEN}${pkg_clean}${NC}... "
-        if sudo zypper install -y "$pkg_clean" &>/dev/null; then
-            echo -e "${GREEN}✓${NC}"
-        else
-            echo -e "${RED}✗ (skipped — install manually if needed)${NC}"
         fi
     done
 else
