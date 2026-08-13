@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>i3wm Nord Glassmorphic — Design Preview</title>
+    <meta name="description" content="Preview of the Nord glassmorphic i3 window manager dotfiles for OpenSUSE.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* =====================
+           Nord color system
+        ======================== */
+        :root {
+            --n0:  #2e3440;
+            --n1:  #3b4252;
+            --n2:  #434c5e;
+            --n3:  #4c566a;
+            --n4:  #d8dee9;
+            --n5:  #e5e9f0;
+            --n6:  #eceff4;
+            --n7:  #8fbcbb;
+            --n8:  #88c0d0;
+            --n9:  #81a1c1;
+            --n10: #5e81ac;
+            --n11: #bf616a;
+            --n12: #d08770;
+            --n13: #ebcb8b;
+            --n14: #a3be8c;
+
+            /* Glassmorphism helpers */
+            --glass-bg:   rgba(46, 52, 64, 0.78);
+            --glass-bg2:  rgba(59, 66, 82, 0.72);
+            --glass-border: rgba(136, 192, 208, 0.30);
+            --blur: blur(16px);
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1f2e 0%, #232b3e 40%, #1e2b3c 100%);
+            color: var(--n4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2.5rem 1.5rem 4rem;
+            overflow-x: hidden;
+        }
+
+        /* =====================
+           Page header
+        ======================== */
+        .page-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 2.4rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: var(--n6);
+            margin-bottom: 0.4rem;
+        }
+
+        .page-header h1 span {
+            color: var(--n8);
+        }
+
+        .page-header p {
+            font-size: 1rem;
+            color: var(--n3);
+            font-weight: 400;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 99px;
+            background: var(--glass-bg2);
+            border: 1px solid var(--glass-border);
+            font-size: 0.78rem;
+            color: var(--n8);
+            font-family: 'JetBrains Mono', monospace;
+            backdrop-filter: var(--blur);
+        }
+
+        /* =====================
+           Desktop viewport
+        ======================== */
+        .desktop-wrap {
+            width: 100%;
+            max-width: 1050px;
+            position: relative;
+        }
+
+        .desktop {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow:
+                0 0 0 1px rgba(136, 192, 208, 0.08),
+                0 32px 64px rgba(0,0,0,0.55),
+                0 8px 20px rgba(0,0,0,0.4);
+            /* Simulated wallpaper */
+            background:
+                radial-gradient(ellipse at 20% 80%, rgba(94, 129, 172, 0.20) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 20%, rgba(136, 192, 208, 0.14) 0%, transparent 50%),
+                linear-gradient(160deg, #1a2230 0%, #1e2a38 50%, #192028 100%);
+        }
+
+        /* Subtle noise overlay for depth */
+        .desktop::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* =====================
+           Polybar
+        ======================== */
+        .polybar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--glass-bg);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 14px;
+            z-index: 10;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.77rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+        }
+
+        .bar-left, .bar-center, .bar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar-icon {
+            color: var(--n8);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .bar-icon:hover { color: var(--n6); }
+
+        .workspaces {
+            display: flex;
+            gap: 3px;
+        }
+
+        .ws {
+            width: 22px;
+            height: 22px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            color: var(--n3);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .ws.active {
+            background: var(--glass-bg2);
+            color: var(--n8);
+            border-bottom: 2px solid var(--n8);
+        }
+
+        .ws:hover:not(.active) { color: var(--n5); }
+
+        .win-title {
+            color: var(--n9);
+            font-size: 0.73rem;
+            max-width: 130px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .bar-center .clock {
+            color: var(--n8);
+            font-weight: 600;
+            font-size: 0.82rem;
+        }
+
+        .bar-stat {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--n4);
+        }
+
+        .bar-stat i {
+            color: var(--n8);
+            font-size: 0.75rem;
+        }
+
+        .bar-power {
+            color: var(--n11);
+            cursor: pointer;
+            margin-left: 4px;
+            transition: opacity 0.2s;
+        }
+        .bar-power:hover { opacity: 0.7; }
+
+        /* =====================
+           Workspace tiles
+        ======================== */
+        .tiles {
+            position: absolute;
+            top: 56px;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            display: grid;
+            grid-template-columns: 3fr 2fr;
+            gap: 10px;
+        }
+
+        /* =====================
+           Glass window
+        ======================== */
+        .win {
+            background: var(--glass-bg);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--glass-border);
+            border-top: 2px solid var(--n8);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow:
+                0 8px 30px rgba(0,0,0,0.4),
+                inset 0 1px 0 rgba(255,255,255,0.04);
+            transition: box-shadow 0.2s;
+        }
+
+        .win:hover {
+            box-shadow:
+                0 12px 36px rgba(0,0,0,0.5),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+
+        .win-header {
+            background: rgba(59, 66, 82, 0.5);
+            padding: 7px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .win-title-bar {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.74rem;
+            color: var(--n5);
+        }
+
+        .win-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--n3);
+        }
+        .dot.close { background: var(--n11); }
+        .dot.min   { background: var(--n13); }
+        .dot.max   { background: var(--n14); }
+
+        .win-body {
+            flex: 1;
+            overflow: hidden;
+            padding: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.76rem;
+            line-height: 1.55;
+            color: var(--n4);
+        }
+
+        .prompt { color: var(--n8); }
+        .path   { color: var(--n9); }
+        .cmd    { color: var(--n6); }
+        .out    { color: var(--n14); margin: 3px 0 10px; }
+        .cmt    { color: var(--n3); }
+
+        /* Info panel */
+        .info-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.74rem;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: var(--n8); font-weight: 600; min-width: 80px; }
+        .info-val   { color: var(--n4); }
+
+        /* =====================
+           Dunst notification
+        ======================== */
+        .notif {
+            position: absolute;
+            top: 58px;
+            right: 20px;
+            width: 260px;
+            background: var(--glass-bg);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--glass-border);
+            border-left: 3px solid var(--n8);
+            border-radius: 8px;
+            padding: 11px 14px;
+            z-index: 30;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+            animation: slideNotif 0.4s cubic-bezier(0.25,0.8,0.25,1);
+        }
+
+        .notif-icon { color: var(--n8); font-size: 1.2rem; margin-top: 2px; }
+
+        .notif-content h4 {
+            font-size: 0.8rem;
+            color: var(--n6);
+            margin-bottom: 2px;
+        }
+
+        .notif-content p {
+            font-size: 0.73rem;
+            color: var(--n4);
+        }
+
+        @keyframes slideNotif {
+            from { transform: translateX(110%); opacity: 0; }
+            to   { transform: translateX(0);    opacity: 1; }
+        }
+
+        /* =====================
+           Rofi overlay
+        ======================== */
+        .rofi-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(30, 38, 52, 0.55);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .rofi-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .rofi-window {
+            width: 420px;
+            background: rgba(46, 52, 64, 0.88);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 1px rgba(136, 192, 208, 0.10),
+                0 24px 48px rgba(0,0,0,0.6);
+            transform: scale(0.95);
+            transition: transform 0.2s cubic-bezier(0.25,0.8,0.25,1);
+        }
+
+        .rofi-overlay.show .rofi-window { transform: scale(1); }
+
+        .rofi-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: rgba(59, 66, 82, 0.5);
+        }
+
+        .rofi-header i { color: var(--n8); font-size: 0.9rem; }
+
+        .rofi-header input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--n5);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.88rem;
+            flex: 1;
+        }
+
+        .rofi-items {
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .rofi-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            color: var(--n4);
+            transition: all 0.12s;
+        }
+
+        .rofi-item:hover, .rofi-item.sel {
+            background: rgba(136, 192, 208, 0.12);
+            color: var(--n8);
+        }
+
+        .rofi-item i { width: 18px; text-align: center; font-size: 0.85rem; }
+
+        /* =====================
+           Controls / actions
+        ======================== */
+        .controls {
+            margin-top: 1.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 18px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--n4);
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            backdrop-filter: var(--blur);
+            transition: all 0.18s;
+        }
+
+        .btn:hover {
+            background: var(--glass-bg2);
+            border-color: rgba(136,192,208,0.5);
+            color: var(--n6);
+        }
+
+        .btn i { color: var(--n8); }
+
+        /* =====================
+           Keybind reference
+        ======================== */
+        .keybinds {
+            margin-top: 2.5rem;
+            width: 100%;
+            max-width: 1050px;
+            background: var(--glass-bg);
+            backdrop-filter: var(--blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .keybinds h3 {
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--n8);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 1rem;
+        }
+
+        .kb-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 10px;
+        }
+
+        .kb-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .kb-key {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.73rem;
+        }
+
+        .key {
+            background: rgba(59, 66, 82, 0.8);
+            border: 1px solid rgba(136,192,208,0.2);
+            border-bottom: 2px solid rgba(136,192,208,0.3);
+            border-radius: 4px;
+            padding: 1px 6px;
+            color: var(--n8);
+            font-size: 0.72rem;
+        }
+
+        .kb-desc {
+            font-size: 0.77rem;
+            color: var(--n3);
+        }
+
+        /* =====================
+           Color palette strip
+        ======================== */
+        .palette {
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 1050px;
+        }
+
+        .palette h3 {
+            font-size: 0.8rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--n8);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.8rem;
+        }
+
+        .palette-swatches {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .swatch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .swatch-color {
+            width: 44px;
+            height: 44px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.06);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .swatch-name {
+            font-size: 0.6rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--n3);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="page-header">
+        <h1>i3wm <span>Nord</span> Glassmorphic</h1>
+        <p>OpenSUSE向け — シンプル・モダン・ガラス調</p>
+        <div class="badge"><i class="fa-brands fa-opensuse"></i> OpenSUSE &nbsp;|&nbsp; <i class="fa-solid fa-snowflake"></i> Nord &nbsp;|&nbsp; i3wm</div>
+    </header>
+
+    <!-- Desktop Mockup -->
+    <div class="desktop-wrap">
+        <div class="desktop" id="desktop">
+
+            <!-- Polybar -->
+            <div class="polybar">
+                <div class="bar-left">
+                    <i class="fa-brands fa-opensuse bar-icon" onclick="openRofi('app')" title="App Launcher (Mod+d)"></i>
+                    <div class="workspaces">
+                        <div class="ws active">1</div>
+                        <div class="ws">2</div>
+                        <div class="ws">3</div>
+                        <div class="ws" style="color:var(--n3)">4</div>
+                        <div class="ws" style="color:var(--n3)">5</div>
+                    </div>
+                    <span class="win-title">kitty — bash</span>
+                </div>
+
+                <div class="bar-center">
+                    <span class="clock"><i class="fa-regular fa-clock"></i> &nbsp;20:15</span>
+                </div>
+
+                <div class="bar-right">
+                    <span class="bar-stat"><i class="fa-solid fa-hard-drive"></i> 28%</span>
+                    <span class="bar-stat"><i class="fa-solid fa-volume-high"></i> 65%</span>
+                    <span class="bar-stat"><i class="fa-solid fa-microchip"></i> 9%</span>
+                    <span class="bar-stat"><i class="fa-solid fa-wifi"></i> Home-5G</span>
+                    <span class="bar-stat"><i class="fa-solid fa-battery-full"></i> 94%</span>
+                    <i class="fa-solid fa-power-off bar-power" onclick="openRofi('sys')" title="Session menu (Mod+Esc)"></i>
+                </div>
+            </div>
+
+            <!-- Tiled windows -->
+            <div class="tiles">
+                <!-- Terminal -->
+                <div class="win">
+                    <div class="win-header">
+                        <span class="win-title-bar">kitty</span>
+                        <div class="win-dots">
+                            <div class="dot min"></div>
+                            <div class="dot max"></div>
+                            <div class="dot close"></div>
+                        </div>
+                    </div>
+                    <div class="win-body">
+                        <div><span class="prompt">shn@opensuse</span><span class="path"> ~/</span> <span class="cmd">neofetch</span></div>
+                        <div class="out cmt">
+                            <span style="color:var(--n8)">  OS</span>: openSUSE Tumbleweed<br>
+                            <span style="color:var(--n8)">  WM</span>: i3 (gaps)<br>
+                            <span style="color:var(--n8)">  Theme</span>: Nord Glassmorphic<br>
+                            <span style="color:var(--n8)">  Icons</span>: Papirus<br>
+                            <span style="color:var(--n8)">  Font</span>: JetBrains Mono NF<br>
+                            <span style="color:var(--n8)">  IME</span>: Fcitx5 + Mozc<br>
+                        </div>
+                        <div><span class="prompt">shn@opensuse</span><span class="path"> ~/</span> <span class="cmd">fcitx5 --version</span></div>
+                        <div class="out">fcitx5 5.1.10</div>
+                        <div class="cmt"># 半角/全角 で日本語入力切り替え</div>
+                        <div><span class="prompt">shn@opensuse</span><span class="path"> ~/</span> <span style="color:var(--n8)">█</span></div>
+                    </div>
+                </div>
+
+                <!-- System info panel -->
+                <div class="win">
+                    <div class="win-header">
+                        <span class="win-title-bar">system</span>
+                        <div class="win-dots">
+                            <div class="dot min"></div>
+                            <div class="dot max"></div>
+                            <div class="dot close"></div>
+                        </div>
+                    </div>
+                    <div class="win-body" style="padding: 10px 14px;">
+                        <div class="info-row"><span class="info-label"><i class="fa-solid fa-microchip"></i> CPU</span><span class="info-val">AMD Ryzen 7 — 9%</span></div>
+                        <div class="info-row"><span class="info-label"><i class="fa-solid fa-memory"></i> RAM</span><span class="info-val">4.1 GB / 16 GB</span></div>
+                        <div class="info-row"><span class="info-label"><i class="fa-solid fa-hard-drive"></i> Disk</span><span class="info-val">/ — 28% used</span></div>
+                        <div class="info-row"><span class="info-label"><i class="fa-solid fa-wifi"></i> Network</span><span class="info-val">Home-5G</span></div>
+                        <div class="info-row"><span class="info-label"><i class="fa-solid fa-battery-three-quarters"></i> Battery</span><span class="info-val">94% — Charging</span></div>
+                        <div class="info-row"><span class="info-label"><i class="fa-solid fa-keyboard"></i> IME</span><span class="info-val">Fcitx5 / Mozc</span></div>
+                        <div class="info-row"><span class="info-label"><i class="fa-solid fa-clock"></i> Uptime</span><span class="info-val">3h 12m</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dunst notification -->
+            <div class="notif" id="notif">
+                <div class="notif-icon"><i class="fa-solid fa-circle-check" id="notif-icon"></i></div>
+                <div class="notif-content">
+                    <h4 id="notif-title">i3 dotfiles</h4>
+                    <p id="notif-body">Glassmorphic Nord theme loaded.</p>
+                </div>
+            </div>
+
+            <!-- Rofi overlay -->
+            <div class="rofi-overlay" id="rofi" onclick="closeRofiOnBg(event)">
+                <div class="rofi-window">
+                    <div class="rofi-header">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="rofi-input" placeholder="Search..." readonly>
+                    </div>
+                    <div class="rofi-items" id="rofi-items"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="controls">
+            <button class="btn" onclick="openRofi('app')">
+                <i class="fa-solid fa-rocket"></i> App Launcher <kbd style="font-family:monospace;font-size:0.7rem;color:var(--n3)">Mod+d</kbd>
+            </button>
+            <button class="btn" onclick="openRofi('sys')">
+                <i class="fa-solid fa-power-off"></i> Session Menu <kbd style="font-family:monospace;font-size:0.7rem;color:var(--n3)">Mod+Esc</kbd>
+            </button>
+            <button class="btn" onclick="triggerNotif('camera','Screenshot', 'Saved to ~/Pictures/Screenshots/')">
+                <i class="fa-solid fa-camera"></i> Screenshot <kbd style="font-family:monospace;font-size:0.7rem;color:var(--n3)">PrtSc</kbd>
+            </button>
+            <button class="btn" onclick="triggerNotif('volume-high','Volume', 'Volume: 70%')">
+                <i class="fa-solid fa-volume-high"></i> Volume +5%
+            </button>
+        </div>
+    </div>
+
+    <!-- Nord Palette -->
+    <div class="palette">
+        <h3>Nord Palette</h3>
+        <div class="palette-swatches">
+            <div class="swatch"><div class="swatch-color" style="background:#2e3440"></div><div class="swatch-name">nord0</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#3b4252"></div><div class="swatch-name">nord1</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#434c5e"></div><div class="swatch-name">nord2</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#4c566a"></div><div class="swatch-name">nord3</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#d8dee9"></div><div class="swatch-name">nord4</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#e5e9f0"></div><div class="swatch-name">nord5</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#eceff4"></div><div class="swatch-name">nord6</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#8fbcbb"></div><div class="swatch-name">nord7</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#88c0d0"></div><div class="swatch-name">nord8</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#81a1c1"></div><div class="swatch-name">nord9</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#5e81ac"></div><div class="swatch-name">nord10</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#bf616a"></div><div class="swatch-name">nord11</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#d08770"></div><div class="swatch-name">nord12</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#ebcb8b"></div><div class="swatch-name">nord13</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#a3be8c"></div><div class="swatch-name">nord14</div></div>
+        </div>
+    </div>
+
+    <!-- Keybind reference -->
+    <div class="keybinds">
+        <h3>Keybindings</h3>
+        <div class="kb-grid">
+            <div class="kb-item">
+                <div class="kb-key"><span class="key">Super</span>+<span class="key">Return</span></div>
+                <div class="kb-desc">Kitty ターミナル起動</div>
+            </div>
+            <div class="kb-item">
+                <div class="kb-key"><span class="key">Super</span>+<span class="key">d</span></div>
+                <div class="kb-desc">Rofi アプリランチャー</div>
+            </div>
+            <div class="kb-item">
+                <div class="kb-key"><span class="key">Super</span>+<span class="key">q</span></div>
+                <div class="kb-desc">ウィンドウを閉じる</div>
+            </div>
+            <div class="kb-item">
+                <div class="kb-key"><span class="key">Super</span>+<span class="key">Esc</span></div>
+                <div class="kb-desc">セッションメニュー</div>
+            </div>
+            <div class="kb-item">
+                <div class="kb-key"><span class="key">Super</span>+<span class="key">h/j/k/l</span></div>
+                <div class="kb-desc">フォーカス移動 (Vi風)</div>
+            </div>
+            <div class="kb-item">
+                <div class="kb-key"><span class="key">Super</span>+<span class="key">f</span></div>
+                <div class="kb-desc">フルスクリーン切替</div>
+            </div>
+            <div class="kb-item">
+                <div class="kb-key"><span class="key">PrtSc</span></div>
+                <div class="kb-desc">全画面スクリーンショット</div>
+            </div>
+            <div class="kb-item">
+                <div class="kb-key"><span class="key">Shift</span>+<span class="key">PrtSc</span></div>
+                <div class="kb-desc">範囲スクリーンショット</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const rofiEl    = document.getElementById('rofi');
+        const rofiItems = document.getElementById('rofi-items');
+        const rofiInput = document.getElementById('rofi-input');
+
+        function openRofi(mode) {
+            rofiItems.innerHTML = '';
+
+            const appList = [
+                { name: 'Firefox',         icon: 'fa-globe' },
+                { name: 'Kitty Terminal',  icon: 'fa-terminal' },
+                { name: 'Files (Thunar)',  icon: 'fa-folder-open' },
+                { name: 'VS Code',         icon: 'fa-code' },
+                { name: 'Fcitx5 Config',   icon: 'fa-keyboard' },
+            ];
+
+            const sysList = [
+                { name: 'Lock Screen',  icon: 'fa-lock' },
+                { name: 'Logout',       icon: 'fa-right-from-bracket' },
+                { name: 'Suspend',      icon: 'fa-moon' },
+                { name: 'Reboot',       icon: 'fa-rotate-right' },
+                { name: 'Shutdown',     icon: 'fa-power-off' },
+            ];
+
+            const list = mode === 'sys' ? sysList : appList;
+            rofiInput.placeholder = mode === 'sys' ? 'Session...' : 'Search apps...';
+
+            list.forEach((item, i) => {
+                const el = document.createElement('div');
+                el.className = 'rofi-item' + (i === 0 ? ' sel' : '');
+                el.innerHTML = `<i class="fa-solid ${item.icon}"></i> ${item.name}`;
+                el.onclick = () => {
+                    triggerNotif('circle-check', mode === 'sys' ? 'Session' : 'Launcher', `${item.name} を起動しました`);
+                    closeRofi();
+                };
+                rofiItems.appendChild(el);
+            });
+
+            rofiEl.classList.add('show');
+        }
+
+        function closeRofi() { rofiEl.classList.remove('show'); }
+        function closeRofiOnBg(e) { if (e.target === rofiEl) closeRofi(); }
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeRofi(); });
+
+        // Dunst notification
+        let notifTimer;
+        function triggerNotif(iconClass, title, body) {
+            const notif     = document.getElementById('notif');
+            const iconEl    = document.getElementById('notif-icon');
+            const titleEl   = document.getElementById('notif-title');
+            const bodyEl    = document.getElementById('notif-body');
+            iconEl.className  = `fa-solid fa-${iconClass}`;
+            titleEl.textContent = title;
+            bodyEl.textContent  = body;
+            notif.style.animation = 'none';
+            notif.offsetHeight;
+            notif.style.animation = '';
+            clearTimeout(notifTimer);
+            notifTimer = setTimeout(() => { notif.style.opacity = '0'; }, 4000);
+            notif.style.opacity = '1';
+        }
+    </script>
+</body>
+</html>

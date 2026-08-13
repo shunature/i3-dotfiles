@@ -1,0 +1,100 @@
+* {
+    bg-col:      #cc2e3440; /* 80% opacity Nord background */
+    bg-col-light:#cc3b4252; /* 80% opacity Nord alternate */
+    border-col:  #88c0d0;   /* Nord accent */
+    selected-col:#cc3b4252;
+    blue:        #88c0d0;
+    fg-col:      #d8dee9;   /* Nord light text */
+    fg-col2:     #bf616a;   /* Nord red */
+    grey:        #4c566a;
+
+    width: 600;
+    font: "JetBrainsMono Nerd Font 10";
+}
+
+element-text, element-icon, mode-caster {
+    background-color: inherit;
+    text-color:       inherit;
+}
+
+window {
+    height: 360px;
+    border: 3px;
+    border-color: @border-col;
+    background-color: @bg-col;
+    border-radius: 12px;
+}
+
+mainbox {
+    background-color: transparent;
+}
+
+inputbar {
+    children: [prompt,entry];
+    background-color: transparent;
+    border-radius: 5px;
+    padding: 2px;
+}
+
+prompt {
+    background-color: @blue;
+    padding: 6px;
+    text-color: #2e3440;
+    border-radius: 3px;
+    margin: 10px 0px 0px 20px;
+}
+
+textbox-prompt-colon {
+    expand: false;
+    str: ":";
+}
+
+entry {
+    padding: 6px;
+    margin: 10px 0px 0px 10px;
+    text-color: @fg-col;
+    background-color: transparent;
+}
+
+listview {
+    border: 0px 0px 0px;
+    padding: 6px 0px 0px;
+    margin: 10px 0px 0px 20px;
+    columns: 2;
+    lines: 5;
+    background-color: transparent;
+}
+
+element {
+    padding: 5px;
+    background-color: transparent;
+    text-color: @fg-col;
+}
+
+element-icon {
+    size: 25px;
+}
+
+element selected {
+    background-color:  @selected-col;
+    text-color: @blue;
+    border-radius: 6px;
+}
+
+mode-switcher {
+    spacing: 0;
+    margin: 0px 20px 10px 20px;
+}
+
+button {
+    padding: 10px;
+    background-color: @bg-col-light;
+    text-color: @grey;
+    vertical-align: 0.5; 
+    horizontal-align: 0.5;
+}
+
+button selected {
+    background-color: @bg-col;
+    text-color: @blue;
+}
