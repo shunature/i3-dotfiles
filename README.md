@@ -17,7 +17,7 @@ A minimalist, premium-looking **i3** Window Manager configuration for **OpenSUSE
 ##  Quick Start & Installation
 
 ```bash
-git clone https://github.com/yourusername/i3-dotfiles.git
+git clone https://github.com/shunature/i3-dotfiles.git
 cd i3-dotfiles
 chmod +x install.sh
 ./install.sh
