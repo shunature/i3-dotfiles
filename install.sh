@@ -36,9 +36,10 @@ echo -e "\n${BLUE}[1/4] Installing dependencies via zypper...${NC}"
 
 PACKAGES=(
     i3
+    i3status
     polybar
     rofi
-    dunst
+    dunst                    # Tumbleweed: available as 'dunst' via X11:utilities or direct
     picom
     kitty
     feh
@@ -48,26 +49,50 @@ PACKAGES=(
     brightnessctl
     playerctl
     polkit-gnome
-    networkmanager-applet
+    NetworkManager-applet    # OpenSUSE uses capital N and M
     # Icon Theme
     papirus-icon-theme
     # Japanese Input Fcitx5
     fcitx5
     fcitx5-mozc
-    fcitx5-gtk
-    fcitx5-qt
+    fcitx5-gtk4
+    fcitx5-qt5
     fcitx5-configtool
 )
 
-echo -e "This will run: ${YELLOW}sudo zypper install -y ${PACKAGES[*]}${NC}"
+echo -e "This will run: ${YELLOW}sudo zypper install -y${NC} (packages listed above)"
 read -p "Would you like to install packages now? (y/N) " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
     sudo zypper refresh
-    sudo zypper install -y "${PACKAGES[@]}"
+
+    # Add X11:utilities OBS repo if dunst is not found in standard repos
+    if ! zypper search -x dunst | grep -q "^i\|^v"; then
+        echo -e "${YELLOW}dunst not found in standard repos. Adding X11:utilities OBS repository...${NC}"
+        sudo zypper addrepo https://download.opensuse.org/repositories/X11:utilities/openSUSE_Tumbleweed/X11:utilities.repo
+        sudo zypper refresh
+    fi
+
+    # Install packages one by one for better error reporting
+    for pkg in "${PACKAGES[@]}"; do
+        # Skip comment lines
+        [[ "$pkg" == \#* ]] && continue
+        # Strip inline comments
+        pkg_clean="${pkg%% #*}"
+        pkg_clean="${pkg_clean%%  *}"
+        [[ -z "$pkg_clean" ]] && continue
+
+        echo -ne "  Installing ${GREEN}${pkg_clean}${NC}... "
+        if sudo zypper install -y "$pkg_clean" &>/dev/null; then
+            echo -e "${GREEN}✓${NC}"
+        else
+            echo -e "${RED}✗ (skipped — install manually if needed)${NC}"
+        fi
+    done
 else
     echo -e "${YELLOW}Skipping package installation. Make sure you install dependencies manually.${NC}"
 fi
+
 
 # 3. Create backups and Symlink
 echo -e "\n${BLUE}[2/4] Setting up configurations and symlinks...${NC}"
