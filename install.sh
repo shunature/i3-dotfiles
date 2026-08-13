@@ -74,7 +74,6 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
         pkg_clean="${pkg%% #*}"
         pkg_clean="${pkg_clean%%  *}"
         [[ -z "$pkg_clean" ]] && continue
-        fi
     done
 else
     echo -e "${YELLOW}Skipping package installation. Make sure you install dependencies manually.${NC}"
